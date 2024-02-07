@@ -1,0 +1,260 @@
+<!-- livebook:{"app_settings":{"access_type":"public","output_type":"rich","slug":"scholars2"}} -->
+
+# 2. Debugging
+
+```elixir
+Mix.install([
+  {:req, "~> 0.4.8"},
+  {:kino, "~> 0.12.3"}
+])
+```
+
+## The dbg Macro
+
+In this notebook, we empower users to peek into the pipeline that normalizes Professors' names. Exposing the pipeline for debugging empowers cross-functional team members to investigate the. cause of bugs.
+
+Elixir introduced a new macro in late 2022 for improved debugging: `Kernel.dbg/2`
+
+```elixir
+defmodule Api do
+  @base_url "https://api.openalex.org"
+  @author_url "/authors"
+  @author_name_search "?filter=display_name.search:"
+  @post_url "&mailto=vanessaklee@gmail.com"
+
+  def request() do
+    Req.new(base_url: @base_url)
+  end
+
+  def author_search_url(term) do
+    @author_url <> @author_name_search <> term <> @post_url
+  end
+
+  def author_search(term) do
+    Req.get!(request(), url: author_search_url(term))
+    |> Map.get(:body)
+    |> Map.get("results")
+  end
+
+  def extract_names(results) do
+    results
+    |> get_original_names()
+    |> replace_hyphens()
+    |> remove_punctuations()
+    |> transform_names()
+    |> capitalize_names()
+  end
+
+  def get_id(results) do
+    Enum.reduce(results, [], fn result, acc ->
+      id = Map.get(result, "id")
+      result = Map.delete(result, "id")
+      new = Map.put(result, :id, id)
+      [new | acc]
+    end)
+  end
+
+  def etl_id(result) do
+    Map.get(result, "id") |> String.replace("https://openalex.org/", "")
+  end
+
+  def set_scholars(results) do
+    Enum.reduce(results, [], fn result, acc ->
+      [%{id: etl_id(result)} | acc]
+    end)
+  end
+
+  def get_names(scholars, results) do
+    Enum.reduce(results, [], fn result, acc ->
+      name = Map.get(result, "display_name")
+      id = etl_id(result)
+
+      case Enum.filter(scholars, fn s -> s.id == id end) do
+        [scholar] ->
+          new = Map.put(scholar, :name, name)
+          [new | acc]
+
+        _ ->
+          nil
+      end
+    end)
+  end
+
+  def get_original_names(results) do
+    Enum.reduce(results, [], fn result, acc ->
+      name = Map.get(result, "display_name")
+      [name | acc]
+    end)
+    |> Enum.reverse()
+  end
+
+  def name_replace(name_part) do
+    case String.downcase(name_part) do
+      "md" -> "MD"
+      "phd" -> "PhD"
+      "dr" -> "Dr"
+      "st" -> "Saint"
+      "mr" -> "Mr"
+      "mrs" -> "Mrs"
+      "ms" -> "Ms"
+      "dds" -> "DDS"
+      "mx" -> "Mx"
+      "miss" -> "Miss"
+      "sir" -> "Sir"
+      "dame" -> "Dame"
+      "lady" -> "Lady"
+      "lord" -> "Lord"
+      "prof" -> "Professor"
+      _ -> name_part
+    end
+  end
+
+  def transform_name(name) do
+    name_parts = String.split(name, " ")
+
+    Enum.reduce(name_parts, [], fn np, acc ->
+      [name_replace(np) | acc]
+    end)
+    |> Enum.reverse()
+    |> Enum.join(" ")
+  end
+
+  def captialize_name(name) do
+    name_parts = String.split(name, " ")
+
+    Enum.reduce(name_parts, [], fn np, acc ->
+      [String.capitalize(np) | acc]
+    end)
+    |> Enum.reverse()
+    |> Enum.join(" ")
+  end
+
+  def replace_hyphen(name) do
+    String.replace(name, "-", " ")
+  end
+
+  def remove_punctuation(name) do
+    String.replace(name, ~r/[[:punct:]]/, "")
+  end
+
+  def normalize_names(scholars) do
+    Enum.reduce(scholars, [], fn scholar, acc ->
+      new_name =
+        Map.get(scholar, :name)
+        |> replace_hyphen()
+        |> String.replace(~r/[[:punct:]]/, "")
+        |> transform_name()
+
+      [Map.put(scholar, :name, new_name) | acc]
+    end)
+  end
+
+  def replace_hyphens(names) do
+    Enum.reduce(names, [], fn name, acc ->
+      [replace_hyphen(name) | acc]
+    end)
+    |> Enum.reverse()
+  end
+
+  def remove_punctuations(names) do
+    Enum.reduce(names, [], fn name, acc ->
+      [remove_punctuation(name) | acc]
+    end)
+    |> Enum.reverse()
+  end
+
+  def transform_names(names) do
+    Enum.reduce(names, [], fn name, acc ->
+      [transform_name(name) | acc]
+    end)
+    |> Enum.reverse()
+  end
+
+  def capitalize_names(names) do
+    Enum.reduce(names, [], fn name, acc ->
+      [captialize_name(name) | acc]
+    end)
+    |> Enum.reverse()
+  end
+end
+```
+
+```elixir
+import Kino.Shorts
+
+show = fn results, frame2 ->
+  Kino.Frame.clear(frame2)
+
+  msg =
+    Kino.HTML.new("""
+      <h3>#{length(results)} author(s) match your search!</h3>
+    """)
+
+  msg2 =
+    Kino.HTML.new("""
+      <h4>Debug: Turn Steps On/Off</h4>
+    """)
+
+  Kino.Frame.append(frame2, msg)
+  Kino.Frame.append(frame2, grid(Api.extract_names(results), columns: 3))
+  Kino.Frame.append(frame2, msg2)
+end
+```
+
+### The Problems
+
+#### Problem 1
+
+A coworker on the ingestion team has received a complaint that a Professor's name is incorrect. Her name is `da Silva` but on our app it is `Da Silva`. They want to understand why.
+
+The professor's name is `Vanessa Wayne Da Silva`
+
+#### Problem 2
+
+Another coworker realizes our search has found 0 publications for a well-published professor. They want to understand why.
+
+The professor's name is `Martin Saint John Sutton`.
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Input Professor's Name
+
+Here we provide an input field for the user to enter a Professor's name.
+
+```elixir
+form =
+  Kino.Control.form(
+    [text_box: Kino.Input.text("Enter the name of the scholar:")],
+    submit: "Search"
+  )
+```
+
+Results will be displayed below. The professors' names have gone through a series of steps to standardize them.
+
+The debugging options will display below the results. We can turn on/off individual steps in the standardization pipeline.
+
+```elixir
+import Api
+frame2 = Kino.Frame.new() |> Kino.render()
+
+[form: form]
+|> Kino.Control.tagged_stream()
+|> Kino.listen(fn {:form, event} ->
+  scholar = URI.encode(event.data.text_box)
+
+  results =
+    if scholar == "", do: [], else: Api.author_search(scholar)
+
+  show.(results, frame2)
+
+  results
+  |> get_original_names()
+  |> replace_hyphens()
+  |> remove_punctuations()
+  |> transform_names()
+  |> capitalize_names()
+  |> dbg
+end)
+```
+
+<!-- livebook:{"offset":5932,"stamp":{"token":"XCP.WH-QB8C5ZIqyl3kJqrIFYiwQBw6_asUWv8bNHxPr7eJigOz5TEHDMB8Cjs8ruIMoU7EIjHFLV2j0_pWr3sp5nrYkZAPzXlcj77UgQRrAUJXCUOogiuxdLVo","version":2}} -->

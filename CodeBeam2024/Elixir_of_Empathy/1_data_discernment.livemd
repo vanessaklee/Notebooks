@@ -1,0 +1,98 @@
+<!-- livebook:{"app_settings":{"access_type":"public","output_type":"rich","slug":"chart"}} -->
+
+# 1. Data Discernment
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.12.3"},
+  {:kino_vega_lite, "~> 0.1.10"}
+])
+```
+
+## Run the application
+
+In a terminal, start your Phoenix application. The short name and cookie will be used in the next cell to connect Livebook to the application.
+
+```
+> iex --name livebook@vanessa.local --sname comp --cookie compcookie -S mix phx.server
+```
+
+Alternatively, you can change the Runtime Settings of the notebook (Microchip icon in the left menu) to attach the entire notebook to an application. In this case, we are using the Elixir standalone runtime with a "Remote execution" Smart Cell in the next section
+
+## Select Institution
+
+Give the user a way to select an Institution. When you change the Institution, re-evaluate the cells.
+
+```elixir
+institution =
+  Kino.Shorts.read_select("Institute",
+    "University of Pennsylvania": "University of Pennsylvania",
+    MIT: "MIT",
+    UPenn: "UPenn",
+    Dartmouth: "Dartmouth",
+    "University of Michigan": "University of Michigan",
+    UCLA: "UCLA"
+  )
+```
+
+## Chart the Data
+
+Our application accepts an institution from the dropdown above and returns the number of publications per year from our external API.
+
+Enter the "Node" and "Cookie" used to start the app above. Use the "Assign To" to assign the dataset to a variable. In this case, we are using `works`.
+
+<!-- livebook:{"attrs":{"assign_to":"works","code":"alias Companion.OpenAlex.Api\n\ninstitution\n|> Atom.to_string()\n|> Api.institution_works_by_year()\n","cookie":"","cookie_secret":"LB_COMP_COOKIE","node":"comp@Vanessas-MBP","node_secret":"","node_secret_value":null,"use_cookie_secret":true,"use_node_secret":false},"chunks":null,"kind":"Elixir.Kino.RemoteExecutionCell","livebook_object":"smart_cell"} -->
+
+```elixir
+require Kino.RPC
+node = :"comp@Vanessas-MBP"
+Node.set_cookie(node, String.to_atom(System.fetch_env!("LB_LB_COMP_COOKIE")))
+
+works =
+  Kino.RPC.eval_string(
+    node,
+    ~S"""
+    alias Companion.OpenAlex.Api
+
+    institution
+    |> Atom.to_string()
+    |> Api.institution_works_by_year()
+
+    """,
+    file: __ENV__.file
+  )
+```
+
+### Pie Chart Using VegaLite
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+alias VegaLite, as: Vl
+
+Vl.new()
+|> Vl.data_from_values(works)
+|> Vl.mark(:arc)
+|> Vl.encode_field(:theta, "value", type: :quantitative)
+|> Vl.encode_field(:color, "year", type: :nominal)
+|> Vl.config(view: [stroke: nil])
+```
+
+### Bar Chart Using "Chart" Smart Cell
+
+<!-- livebook:{"attrs":{"chart_title":"Publications By Year","height":500,"layers":[{"active":true,"chart_type":"line","color_field":"__count__","color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":null,"color_field_type":null,"data_variable":"works","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"year","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"nominal","y_field":"value","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.Vl","width":500},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+Vl.new(width: 500, height: 500, title: "Publications By Year")
+|> Vl.data_from_values(works, only: ["year", "value"])
+|> Vl.mark(:line)
+|> Vl.encode_field(:x, "year", type: :nominal)
+|> Vl.encode_field(:y, "value", type: :quantitative)
+|> Vl.encode(:color, aggregate: :count)
+```
+
+## Deploy the Notebook
+
+For these charts to provide value, we can deploy the notebook as an app. Click the "App Setting" icon (Rocketship) in the menu to the left.
+
+<!-- livebook:{"offset":3715,"stamp":{"token":"XCP.CVtcEPcSJQuTh3vuHPQUiDaagY9YXclY9kpIxHAo9VFQPsO9PxzjydHOuQgBE0nSHd5JK47Eq1aWLlocDWd5FVVWAiee7vua_uVmKLdhXrqQbUGx-iRaSMk","version":2}} -->

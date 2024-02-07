@@ -1,0 +1,59 @@
+<!-- livebook:{"app_settings":{"access_type":"public","show_source":true,"slug":"base"},"file_entries":[{"name":"axon.png","type":"attachment"},{"name":"bumblebee.png","type":"attachment"},{"name":"kino.png","type":"attachment"},{"name":"livebook.png","type":"attachment"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/Users/vlee/Desktop/livebook_frontpage.png"},"name":"livebook_frontpage.png","type":"file"},{"name":"nx.png","type":"attachment"},{"name":"vegalite.png","type":"attachment"}]} -->
+
+# Overview
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.12.3"}
+])
+```
+
+## Our Goal
+
+To demonstrate how Livebook, Elixir's computational notebook, can help us increase empathy by engaging and empowering our teams.
+
+<!-- livebook:{"break_markdown":true} -->
+
+Install Livebook at https://livebook.dev/#install
+
+## Our Toolset
+
+In a notebook we have Sections. In our sections we have the option to create different types of cells. Hover over the space between cells to see the options available. The first cell in the notebook is for setup and dependencies.
+
+This is a markdown cell with text. Below is a markdown cell with images. The images repreesent the tools we will use in this presentation.
+
+Since its launch, Livebook has become more collaborative and powerful.
+
+<!-- livebook:{"break_markdown":true} -->
+
+![](files/kino.png)
+![](files/vegalite.png)
+![](files/nx.png)
+![](files/axon.png)
+![](files/bumblebee.png)
+
+<!-- livebook:{"break_markdown":true} -->
+
+Discerning viewers will see that we are missing an image. I'll use that as an opportunity to show off File Integration in Livebook.  File Integration.
+
+We can open our Files (folder icon left menu) and drag the missing image. The notebook guesses at tasks we may want to undertake with the image. We'll just read out the image file.
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Kino
+
+This cell shows how we can use the `Kino` library to display the images in a grid. 
+Use the &#x25b7; icon above the interactive Elixir cell to evaluate the code.
+
+```elixir
+import Kino.Shorts
+
+images =
+  for path <- ["livebook.png", "kino.png", "vegalite.png", "nx.png", "axon.png", "bumblebee.png"] do
+    Kino.FS.file_path(path) |> File.read!() |> image(:png)
+  end
+
+grid(images, columns: 3)
+```
+
+<!-- livebook:{"offset":2265,"stamp":{"token":"XCP.h-bYbMKKxYEEzHtCw5CQSEPtNMyQmrtTCKP5-NJ3Y5pYj2Ky3lrERjTxsz0I1OdhhWSEj2L1VUTTvTgfyCTthBFq30usYe4hBJBowg","version":2}} -->
