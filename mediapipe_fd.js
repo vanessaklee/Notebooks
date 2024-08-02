@@ -12,8 +12,7 @@ export async function init(ctx, html) {
     console.log("Starting.....");
     const demosSection = document.getElementById("demos");
 
-    let faceDetector: FaceDetector;
-    let runningMode: string = "IMAGE";
+    // let faceDetector: FaceDetector;
 
     // Initialize the object detector
     const initializefaceDetector = async () => {
@@ -25,7 +24,7 @@ export async function init(ctx, html) {
           modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite`,
           delegate: "GPU"
         },
-        runningMode: runningMode
+        runningMode: "IMAGE"
       });
       demosSection.classList.remove("invisible");
     };
@@ -58,12 +57,6 @@ export async function init(ctx, html) {
       if (!faceDetector) {
         console.log("Wait for objectDetector to load before clicking");
         return;
-      }
-    
-      // if video mode is initialized, set runningMode to image
-      if (runningMode === "VIDEO") {
-        runningMode = "IMAGE";
-        await faceDetector.setOptions({ runningMode: "IMAGE" });
       }
     
       const ratio = event.target.height / event.target.naturalHeight;
