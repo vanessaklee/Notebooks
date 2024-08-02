@@ -1,7 +1,6 @@
 import {
   FaceDetector,
   FilesetResolver,
-  Detection,
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 export async function init(ctx, html) {
@@ -53,11 +52,6 @@ export async function init(ctx, html) {
         if (!faceDetector) {
             console.log("Wait for objectDetector to load before clicking");
             return;
-        }
-        // if video mode is initialized, set runningMode to image
-        if (runningMode === "VIDEO") {
-            runningMode = "IMAGE";
-            await faceDetector.setOptions({ runningMode: "IMAGE" });
         }
         const ratio = event.target.height / event.target.naturalHeight;
         // faceDetector.detect returns a promise which, when resolved, is an array of Detection faces
@@ -119,5 +113,6 @@ export async function init(ctx, html) {
         }
     }
   }
+
   run();
 }
