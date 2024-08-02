@@ -25,10 +25,6 @@ const initializefaceDetector = async () => {
 };
 initializefaceDetector();
 
-/********************************************************************
- // Demo 1: Grab a bunch of images from the page and detection them
- // upon click.
- ********************************************************************/
 
 const imageContainers = document.getElementsByClassName("detectOnClick");
 
@@ -36,9 +32,6 @@ for (let imageContainer of imageContainers) {
   imageContainer.children[0].addEventListener("click", handleClick);
 }
 
-/**
- * Detect faces in still images on click
- */
 async function handleClick(event) {
   const highlighters = event.target.parentNode.getElementsByClassName(
     "highlighter"
@@ -131,10 +124,6 @@ function displayImageDetections(detections: [], resultElement: HTMLElement) {
     }
   }
 }
-
-/********************************************************************
- // Demo 2: Continuously grab image from webcam stream and detect it.
- ********************************************************************/
 
 let video = document.getElementById("webcam");
 const liveView = document.getElementById("liveView");
