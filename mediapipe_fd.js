@@ -118,5 +118,6 @@ export async function init(ctx, html) {
             }
         }
     }
+  }
   run();
 }
