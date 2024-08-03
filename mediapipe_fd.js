@@ -30,7 +30,6 @@ export async function init(ctx, html) {
      // upon click.
      ********************************************************************/
     const imageContainers = document.getElementsByClassName("detectOnClick");
-    console.log(imageContainers)
     for (let imageContainer of imageContainers) {
         imageContainer.children[0].addEventListener("click", handleClick);
     }
@@ -62,8 +61,8 @@ export async function init(ctx, html) {
     }
     function displayImageDetections(detections, resultElement) {
         const ratio = resultElement.height / resultElement.naturalHeight;
-        console.log(ratio);
         for (let detection of detections) {
+            console.log(detection);
             // Description text
             const p = document.createElement("p");
             p.setAttribute("class", "info");
