@@ -80,14 +80,6 @@ export async function init(ctx, html) {
         const detections = faceDetector.detect(event.target).detections;
         console.log(detections);
         displayImageDetections(detections, event.target);
-        if detections = [] {
-          const p = document.createElement("p");
-          p.innerText = "Confidence: 0%";
-          const highlighter = document.createElement("div");
-          highlighter.setAttribute("class", "highlighter");
-          resultElement.parentNode.appendChild(highlighter);
-          resultElement.parentNode.appendChild(p);
-        }
     }
     function displayImageDetections(detections, resultElement) {
         const ratio = resultElement.height / resultElement.naturalHeight;
