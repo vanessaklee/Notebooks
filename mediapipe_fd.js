@@ -4,7 +4,7 @@ import {
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 export async function init(ctx, html) {
-  ctx.importCSS("main.css");
+  ctx.importCSS("https://raw.githubusercontent.com/vanessaklee/Notebooks/main/mediapipe_fd.css");
   ctx.root.innerHTML = html;
 
   async function run() {
