@@ -40,7 +40,6 @@ export async function init(ctx, html) {
       const imageContainers = document.getElementsByClassName("detectOnClick");
       for (let imageContainer of imageContainers) {
         imageContainer.children[0].click();
-        imageContainer.children[0].style.display = "block";
       }
     }
     /**
