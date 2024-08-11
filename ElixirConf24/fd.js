@@ -34,6 +34,18 @@ export async function init(ctx, html) {
         imageContainer.children[0].addEventListener("click", handleClick);
     }
     /**
+     Detect likelihood of face in given image
+     */
+    async function evaluateImage(image) {
+      const detections = faceDetector.detect(event.target).detections;
+      console.log(detections);
+      
+      console.log(ratio);
+      for (let detection of detections) {
+          Math.round(parseFloat(detection.categories[0].score) * 100)
+      }
+    }
+    /**
      * Detect faces in still images on click
      */
     async function handleClick(event) {
