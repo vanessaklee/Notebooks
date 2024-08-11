@@ -30,7 +30,7 @@ export async function init(ctx, html) {
      // upon click.
      ********************************************************************/
     const imageContainers = document.getElementsByClassName("detectOnClick");
-    const allImageContainer = document.getElementsByClassName("detectAllOnClick");
+    const allImageContainer = document.getElementById("detectAllOnClick");
     for (let imageContainer of imageContainers) {
         imageContainer.children[0].addEventListener("click", handleClick);
     }
