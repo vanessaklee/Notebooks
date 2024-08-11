@@ -1,16 +1,11 @@
-import {
-  FaceDetector,
-  FilesetResolver
-} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 export async function init(ctx, html) {
   ctx.importCSS("https://raw.githubusercontent.com/vanessaklee/Notebooks/main/mediapipe_fd.css");
   ctx.root.innerHTML = html;
 
   async function run() {
-    console.log("Starting.....");
     const demosSection = document.getElementById("demos");
-  
     let faceDetector;
     let runningMode = "IMAGE";
     
@@ -40,39 +35,27 @@ export async function init(ctx, html) {
      * Detect faces in still images on click
      */
     async function handleClick(event) {
-      const highlighters = event.target.parentNode.getElementsByClassName(
-        "highlighter"
-      );
+      const highlighters = event.target.parentNode.getElementsByClassName("highlighter");
       while (highlighters[0]) {
-        highlighters[0].parentNode.removeChild(highlighters[0]);
+          highlighters[0].parentNode.removeChild(highlighters[0]);
       }
-    
       const infos = event.target.parentNode.getElementsByClassName("info");
       while (infos[0]) {
-        infos[0].parentNode.removeChild(infos[0]);
+          infos[0].parentNode.removeChild(infos[0]);
       }
       const keyPoints = event.target.parentNode.getElementsByClassName("key-point");
       while (keyPoints[0]) {
-        keyPoints[0].parentNode.removeChild(keyPoints[0]);
+          keyPoints[0].parentNode.removeChild(keyPoints[0]);
       }
-    
       if (!faceDetector) {
-        console.log("Wait for objectDetector to load before clicking");
-        return;
-      }
-    
-      // if video mode is initialized, set runningMode to image
-      if (runningMode === "VIDEO") {
-        runningMode = "IMAGE";
-        await faceDetector.setOptions({ runningMode: "IMAGE" });
+          console.log("Wait for objectDetector to load before clicking");
+          return;
       }
     
       const ratio = event.target.height / event.target.naturalHeight;
-    
       // faceDetector.detect returns a promise which, when resolved, is an array of Detection faces
       const detections = faceDetector.detect(event.target).detections;
       console.log(detections);
-    
       displayImageDetections(detections, event.target);
     }
 
