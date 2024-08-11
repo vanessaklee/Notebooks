@@ -4,140 +4,114 @@ import {
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 export async function init(ctx, html) {
-  ctx.importCSS("https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css");
+  ctx.importCSS("main.css");
   ctx.root.innerHTML = html;
 
   async function run() {
     console.log("Starting.....");
-    const videoIn = document.getElementById("source"),
-      display = { width: videoIn.width, height: videoIn.height },
-      canvas = document.createElement("canvas"),
-      context = canvas.getContext("2d"),
-      stream = await window.navigator.mediaDevices.getUserMedia({
-        video: display,
-        audio: false,
-      });
-
-    videoIn.srcObject = stream;
-    await videoIn.play();
-
-    // -------------------mediaPipe-api ------------------
-    canvas.height = display.height;
-    canvas.width = display.width;
-
+    const demosSection = document.getElementById("demos");
     let faceDetector;
-
-    // Loads the MediaPipe Face Detector model and begins detecting faces in the input video.
-    const initializeFaceDetector = async () => {
-      const vision = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
-      );
-      faceDetector = await FaceDetector.createFromOptions(vision, {
-        baseOptions: {
-          modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite`,
-          delegate: "GPU",
-        },
-        runningMode: "VIDEO",
-      });
-      await predictWebcam();
-    };
-
-    async function predictWebcam() {
-      const detections = await faceDetector.detectForVideo(
-        videoIn,
-        performance.now()
-      );
-      displayVideoDetections(detections.detections);
-      videoIn.requestVideoFrameCallback(predictWebcam);
-    }
-
-    function displayVideoDetections(detections) {
-      context.clearRect(0, 0, display.width, display.height);
-      context.drawImage(videoIn, 0, 0, display.width, display.height);
-
-      detections.forEach((detection) => {
-        const bbox = detection.boundingBox;
-        context.beginPath();
-        context.rect(bbox.originX, bbox.originY, bbox.width, bbox.height);
-        context.lineWidth = 2;
-        context.strokeStyle = "blue";
-        context.stroke();
-
-        detection.keypoints.forEach((keypoint) => {
-          context.beginPath();
-          context.arc(keypoint.x, keypoint.y, 3, 0, 2 * Math.PI);
-          context.fillStyle = "red";
-          context.fill();
+    let runningMode = "IMAGE";
+    // Initialize the object detector
+    const initializefaceDetector = async () => {
+        const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
+        faceDetector = await FaceDetector.createFromOptions(vision, {
+            baseOptions: {
+                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite`,
+                delegate: "GPU"
+            },
+            runningMode: runningMode
         });
-        /*
-        const p = document.createElement("p");
-        p.innerText = `Confidence: ${(
-          detection.categories[0].score * 100
-        ).toFixed(2)}%`;
-        p.style.position = "absolute";
-        p.style.left = `${bbox.originX}px`;
-        p.style.top = `${bbox.originY - 20}px`;
-        p.style.backgroundColor = "rgba(255, 255, 255, 0.7)";
-        p.style.padding = "2px";
-        p.style.borderRadius = "3px";
-        document.body.appendChild(p);
-
-        setTimeout(() => {
-          document.body.removeChild(p);
-        }, 1000);
-        */
-      });
+        demosSection.classList.remove("invisible");
+    };
+    initializefaceDetector();
+    /********************************************************************
+     // Demo 1: Grab a bunch of images from the page and detection them
+     // upon click.
+     ********************************************************************/
+    const imageContainers = document.getElementsByClassName("detectOnClick");
+    for (let imageContainer of imageContainers) {
+        imageContainer.children[0].addEventListener("click", handleClick);
     }
-
-    await initializeFaceDetector();
-    videoIn.requestVideoFrameCallback(predictWebcam);
-    const transformedStream = canvas.captureStream(30);
-
-    //----------------------- WEBRTC-----------------------------
-    const iceConf = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
-    const pc = new RTCPeerConnection(iceConf);
-
-    // capture local MediaStream (from the webcam)
-    const tracks = transformedStream.getTracks();
-    tracks.forEach((track) => pc.addTrack(track, transformedStream));
-
-    // send offer to any peer connected on the signaling channel
-    pc.onicecandidate = ({ candidate }) => {
-      if (candidate === null) {
-        return;
-      }
-      ctx.pushEvent("ice", { candidate: candidate.toJSON(), type: "ice" });
-    };
-
-    // send offer to any peer connected on the signaling channel
-    pc.onnegotiationneeded = async () => {
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      console.log("--> Offer created and sent");
-      ctx.pushEvent("offer", { sdp: offer });
-    };
-
-    // received from the remote peer (Elixir SFU server here) via UDP
-    pc.ontrack = ({ streams }) => {
-      console.log("--> Received remote track");
-      const echo = document.querySelector("#echo");
-      echo.srcObject = streams[0];
-    };
-
-    // received from the remote peer via signaling channel (Elixir server)
-    ctx.handleEvent("ice", async ({ candidate }) => {
-      await pc.addIceCandidate(candidate);
-    });
-
-    ctx.handleEvent("answer", async (msg) => {
-      console.log("--> handled Answer");
-      await pc.setRemoteDescription(msg);
-    });
-
-    // internal WebRTC listener, for information or other action...
-    pc.onconnectionstatechange = () => {
-      console.log("~~> Connection state: ", pc.connectionState);
-    };
+    /**
+     * Detect faces in still images on click
+     */
+    async function handleClick(event) {
+        const highlighters = event.target.parentNode.getElementsByClassName("highlighter");
+        while (highlighters[0]) {
+            highlighters[0].parentNode.removeChild(highlighters[0]);
+        }
+        const infos = event.target.parentNode.getElementsByClassName("info");
+        while (infos[0]) {
+            infos[0].parentNode.removeChild(infos[0]);
+        }
+        const keyPoints = event.target.parentNode.getElementsByClassName("key-point");
+        while (keyPoints[0]) {
+            keyPoints[0].parentNode.removeChild(keyPoints[0]);
+        }
+        if (!faceDetector) {
+            console.log("Wait for objectDetector to load before clicking");
+            return;
+        }
+        const ratio = event.target.height / event.target.naturalHeight;
+        // faceDetector.detect returns a promise which, when resolved, is an array of Detection faces
+        const detections = faceDetector.detect(event.target).detections;
+        console.log(detections);
+        displayImageDetections(detections, event.target);
+    }
+    function displayImageDetections(detections, resultElement) {
+        const ratio = resultElement.height / resultElement.naturalHeight;
+        console.log(ratio);
+        for (let detection of detections) {
+            // Description text
+            const p = document.createElement("p");
+            p.setAttribute("class", "info");
+            p.innerText =
+                "Confidence: " +
+                    Math.round(parseFloat(detection.categories[0].score) * 100) +
+                    "% .";
+            // Positioned at the top left of the bounding box.
+            // Height is whatever the text takes up.
+            // Width subtracts text padding in CSS so fits perfectly.
+            p.style =
+                "left: " +
+                    detection.boundingBox.originX * ratio +
+                    "px;" +
+                    "top: " +
+                    (detection.boundingBox.originY * ratio - 30) +
+                    "px; " +
+                    "width: " +
+                    (detection.boundingBox.width * ratio - 10) +
+                    "px;" +
+                    "hight: " +
+                    20 +
+                    "px;";
+            const highlighter = document.createElement("div");
+            highlighter.setAttribute("class", "highlighter");
+            highlighter.style =
+                "left: " +
+                    detection.boundingBox.originX * ratio +
+                    "px;" +
+                    "top: " +
+                    detection.boundingBox.originY * ratio +
+                    "px;" +
+                    "width: " +
+                    detection.boundingBox.width * ratio +
+                    "px;" +
+                    "height: " +
+                    detection.boundingBox.height * ratio +
+                    "px;";
+            resultElement.parentNode.appendChild(highlighter);
+            resultElement.parentNode.appendChild(p);
+            for (let keypoint of detection.keypoints) {
+                const keypointEl = document.createElement("spam");
+                keypointEl.className = "key-point";
+                keypointEl.style.top = `${keypoint.y * resultElement.height - 3}px`;
+                keypointEl.style.left = `${keypoint.x * resultElement.width - 3}px`;
+                resultElement.parentNode.appendChild(keypointEl);
+            }
+        }
+    }
   }
 
   run();
