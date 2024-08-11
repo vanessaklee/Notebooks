@@ -87,7 +87,7 @@ export async function init(ctx, html) {
           // Description text
           const p = document.createElement("p");
           p.setAttribute("class", "info");
-          if detection == [] {
+          if detection = [] {
             p.innerText = "Confidence: 0%";
             const highlighter = document.createElement("div");
             highlighter.setAttribute("class", "highlighter");
