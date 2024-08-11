@@ -25,6 +25,18 @@ export async function init(ctx, html) {
         demosSection.classList.remove("invisible");
     };
     initializefaceDetector();
+    /**
+     Detect likelihood of face in given image
+     */
+    async function evaluateImage(image) {
+      const detections = faceDetector.detect(event.target).detections;
+      console.log(detections);
+      
+      console.log(ratio);
+      for (let detection of detections) {
+          Math.round(parseFloat(detection.categories[0].score) * 100)
+      }
+    }
     /********************************************************************
      // Demo 1: Grab a bunch of images from the page and detection them
      // upon click.
