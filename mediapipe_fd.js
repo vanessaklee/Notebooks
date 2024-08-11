@@ -83,11 +83,17 @@ export async function init(ctx, html) {
     }
     function displayImageDetections(detections, resultElement) {
         const ratio = resultElement.height / resultElement.naturalHeight;
-        console.log(ratio);
         for (let detection of detections) {
-            // Description text
-            const p = document.createElement("p");
-            p.setAttribute("class", "info");
+          // Description text
+          const p = document.createElement("p");
+          p.setAttribute("class", "info");
+          if detection == [] {
+            p.innerText = "Confidence: 0%";
+            const highlighter = document.createElement("div");
+            highlighter.setAttribute("class", "highlighter");
+            resultElement.parentNode.appendChild(highlighter);
+            resultElement.parentNode.appendChild(p);
+          } else {
             p.innerText =
                 "Confidence: " +
                     Math.round(parseFloat(detection.categories[0].score) * 100) +
@@ -132,7 +138,7 @@ export async function init(ctx, html) {
                 keypointEl.style.left = `${keypoint.x * resultElement.width - 3}px`;
                 resultElement.parentNode.appendChild(keypointEl);
             }
-        }
+          }}
     }
   }
 
