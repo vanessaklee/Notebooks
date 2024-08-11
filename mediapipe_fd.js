@@ -25,6 +25,23 @@ export async function init(ctx, html) {
         demosSection.classList.remove("invisible");
     };
     initializefaceDetector();
+    /********************************************************************
+     // Demo 1: Grab a bunch of images from the page and detection them
+     // upon click.
+     ********************************************************************/
+    const imageContainers = document.getElementsByClassName("detectOnClick");
+    const allImageContainer = document.getElementsByClassName("detectAllOnClick");
+    for (let imageContainer of imageContainers) {
+        imageContainer.children[0].addEventListener("click", handleClick);
+    }
+    allImageContainer.addEventListener("click", handleAllClick);
+
+    async function handleAllClick(event) {
+      const imageContainers = document.getElementsByClassName("detectOnClick");
+      for (let imageContainer of imageContainers) {
+          imageContainer.children[0].click();
+      }
+    }
     /**
      Detect likelihood of face in given image
      */
@@ -37,14 +54,7 @@ export async function init(ctx, html) {
           Math.round(parseFloat(detection.categories[0].score) * 100)
       }
     }
-    /********************************************************************
-     // Demo 1: Grab a bunch of images from the page and detection them
-     // upon click.
-     ********************************************************************/
-    const imageContainers = document.getElementsByClassName("detectOnClick");
-    for (let imageContainer of imageContainers) {
-        imageContainer.children[0].addEventListener("click", handleClick);
-    }
+    
     /**
      * Detect faces in still images on click
      */
