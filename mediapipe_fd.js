@@ -4,7 +4,7 @@ import {
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 export async function init(ctx, html) {
-  ctx.importCSS("https://raw.githubusercontent.com/dwyl/WebRTC-SFU-demo/main/lib/assets/main.css");
+  ctx.importCSS("https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css");
   ctx.root.innerHTML = html;
 
   async function run() {
