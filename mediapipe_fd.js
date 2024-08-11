@@ -39,7 +39,8 @@ export async function init(ctx, html) {
     async function handleAllClick(event) {
       const imageContainers = document.getElementsByClassName("detectOnClick");
       for (let imageContainer of imageContainers) {
-          imageContainer.children[0].click();
+        imageContainer.children[0].click();
+        imageContainer.children[0].style.display = "block";
       }
     }
     /**
