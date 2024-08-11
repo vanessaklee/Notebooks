@@ -26,8 +26,7 @@ export async function init(ctx, html) {
     };
     initializefaceDetector();
     /********************************************************************
-     // Demo 1: Grab a bunch of images from the page and detection them
-     // upon click.
+     // Demo 1: Grab images from page and detection them upon click
      ********************************************************************/
     const imageContainers = document.getElementsByClassName("detectOnClick");
     for (let imageContainer of imageContainers) {
@@ -60,59 +59,60 @@ export async function init(ctx, html) {
         displayImageDetections(detections, event.target);
     }
     function displayImageDetections(detections, resultElement) {
-        const ratio = resultElement.height / resultElement.naturalHeight;
-  console.log(ratio);
+      const ratio = resultElement.height / resultElement.naturalHeight;
+      console.log(ratio);
 
-  for (let detection of detections) {
-    // Description text
-    const p = document.createElement("p");
-    p.setAttribute("class", "info");
-    p.innerText =
-      "Confidence: " +
-      Math.round(parseFloat(detection.categories[0].score) * 100) +
-      "% .";
-    // Positioned at the top left of the bounding box.
-    // Height is whatever the text takes up.
-    // Width subtracts text padding in CSS so fits perfectly.
-    p.style =
-      "left: " +
-      detection.boundingBox.originX * ratio +
-      "px;" +
-      "top: " +
-      (detection.boundingBox.originY * ratio - 30) +
-      "px; " +
-      "width: " +
-      (detection.boundingBox.width * ratio - 10) +
-      "px;" +
-      "hight: " +
-      20 +
-      "px;";
-    const highlighter = document.createElement("div");
-    highlighter.setAttribute("class", "highlighter");
-    highlighter.style =
-      "left: " +
-      detection.boundingBox.originX * ratio +
-      "px;" +
-      "top: " +
-      detection.boundingBox.originY * ratio +
-      "px;" +
-      "width: " +
-      detection.boundingBox.width * ratio +
-      "px;" +
-      "height: " +
-      detection.boundingBox.height * ratio +
-      "px;";
+      for (let detection of detections) {
+        // Description text
+        const p = document.createElement("p");
+        p.setAttribute("class", "info");
+        p.innerText =
+          "Confidence: " +
+          Math.round(parseFloat(detection.categories[0].score) * 100) +
+          "% .";
+        // Positioned at the top left of the bounding box.
+        // Height is whatever the text takes up.
+        // Width subtracts text padding in CSS so fits perfectly.
+        p.style =
+          "left: " +
+          detection.boundingBox.originX * ratio +
+          "px;" +
+          "top: " +
+          (detection.boundingBox.originY * ratio - 30) +
+          "px; " +
+          "width: " +
+          (detection.boundingBox.width * ratio - 10) +
+          "px;" +
+          "hight: " +
+          20 +
+          "px;";
+        const highlighter = document.createElement("div");
+        highlighter.setAttribute("class", "highlighter");
+        highlighter.style =
+          "left: " +
+          detection.boundingBox.originX * ratio +
+          "px;" +
+          "top: " +
+          detection.boundingBox.originY * ratio +
+          "px;" +
+          "width: " +
+          detection.boundingBox.width * ratio +
+          "px;" +
+          "height: " +
+          detection.boundingBox.height * ratio +
+          "px;";
 
-    resultElement.parentNode.appendChild(highlighter);
-    resultElement.parentNode.appendChild(p);
-    for (let keypoint of detection.keypoints) {
-      const keypointEl = document.createElement("spam");
-      keypointEl.className = "key-point";
-      keypointEl.style.top = `${keypoint.y * resultElement.height - 3}px`;
-      keypointEl.style.left = `${keypoint.x * resultElement.width - 3}px`;
-      resultElement.parentNode.appendChild(keypointEl);
+        resultElement.parentNode.appendChild(highlighter);
+        resultElement.parentNode.appendChild(p);
+        for (let keypoint of detection.keypoints) {
+          const keypointEl = document.createElement("spam");
+          keypointEl.className = "key-point";
+          keypointEl.style.top = `${keypoint.y * resultElement.height - 3}px`;
+          keypointEl.style.left = `${keypoint.x * resultElement.width - 3}px`;
+          resultElement.parentNode.appendChild(keypointEl);
+        }
+      }
     }
   }
-
   run();
 }
