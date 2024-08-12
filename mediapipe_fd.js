@@ -78,8 +78,15 @@ export async function init(ctx, html) {
         const ratio = event.target.height / event.target.naturalHeight;
         // faceDetector.detect returns a promise which, when resolved, is an array of Detection faces
         const detections = faceDetector.detect(event.target).detections;
-        console.log(detections.length);
-        
+        if detections.length < 1 {
+          const p = document.createElement("p");
+          p.setAttribute("class", "info");
+          p.innerText = "Confidence:0%";
+          const highlighter = document.createElement("div");
+          highlighter.setAttribute("class", "highlighter");
+          resultElement.parentNode.appendChild(highlighter);
+          resultElement.parentNode.appendChild(p);
+        }
         displayImageDetections(detections, event.target);
     }
     function displayImageDetections(detections, resultElement) {
