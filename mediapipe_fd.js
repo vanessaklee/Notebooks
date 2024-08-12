@@ -78,7 +78,8 @@ export async function init(ctx, html) {
         const ratio = event.target.height / event.target.naturalHeight;
         // faceDetector.detect returns a promise which, when resolved, is an array of Detection faces
         const detections = faceDetector.detect(event.target).detections;
-        console.log(detections);
+        console.log(detections.length);
+        
         displayImageDetections(detections, event.target);
     }
     function displayImageDetections(detections, resultElement) {
