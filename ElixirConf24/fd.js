@@ -30,8 +30,17 @@ export async function init(ctx, html) {
      // upon click.
      ********************************************************************/
     const imageContainers = document.getElementsByClassName("detectOnClick");
+    const allImageContainer = document.getElementById("detectAllOnClick");
     for (let imageContainer of imageContainers) {
         imageContainer.children[0].addEventListener("click", handleClick);
+    }
+    allImageContainer.addEventListener("click", handleAllClick);
+
+    async function handleAllClick(event) {
+      const imageContainers = document.getElementsByClassName("detectOnClick");
+      for (let imageContainer of imageContainers) {
+        imageContainer.children[0].click();
+      }
     }
     /**
      Detect likelihood of face in given image
@@ -45,6 +54,7 @@ export async function init(ctx, html) {
           Math.round(parseFloat(detection.categories[0].score) * 100)
       }
     }
+    
     /**
      * Detect faces in still images on click
      */
@@ -68,12 +78,10 @@ export async function init(ctx, html) {
         const ratio = event.target.height / event.target.naturalHeight;
         // faceDetector.detect returns a promise which, when resolved, is an array of Detection faces
         const detections = faceDetector.detect(event.target).detections;
-        console.log(detections);
         displayImageDetections(detections, event.target);
     }
     function displayImageDetections(detections, resultElement) {
         const ratio = resultElement.height / resultElement.naturalHeight;
-        console.log(ratio);
         for (let detection of detections) {
             // Description text
             const p = document.createElement("p");
@@ -122,7 +130,7 @@ export async function init(ctx, html) {
                 keypointEl.style.left = `${keypoint.x * resultElement.width - 3}px`;
                 resultElement.parentNode.appendChild(keypointEl);
             }
-        }
+          }
     }
   }
 
