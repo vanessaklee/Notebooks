@@ -78,7 +78,7 @@ export async function init(ctx, html) {
         const ratio = event.target.height / event.target.naturalHeight;
         // faceDetector.detect returns a promise which, when resolved, is an array of Detection faces
         const detections = faceDetector.detect(event.target).detections;
-        if detections.length < 1 {
+        if detections.length < 1 { 
           const p = document.createElement("p");
           p.setAttribute("class", "info");
           p.innerText = "Confidence:0%";
